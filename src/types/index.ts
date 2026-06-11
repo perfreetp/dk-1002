@@ -63,6 +63,9 @@ export interface TeamMember {
   id: string;
   name: string;
   avatar: string;
+  phone?: string;
+  notes?: string;
+  arrived?: boolean;
 }
 
 export const CHECKLIST_TEMPLATES: Record<string, string[]> = {

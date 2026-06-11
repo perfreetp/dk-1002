@@ -121,7 +121,7 @@ export const mockWeather: WeatherData = {
 };
 
 export const mockTeamMembers: TeamMember[] = [
-  { id: '1', name: '张三', avatar: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20male%20portrait%20friendly%20smile&image_size=square' },
-  { id: '2', name: '李四', avatar: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20female%20portrait%20friendly%20smile&image_size=square' },
-  { id: '3', name: '王五', avatar: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20male%20portrait%20outdoor%20adventure&image_size=square' },
+  { id: '1', name: '张三', avatar: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20male%20portrait%20friendly%20smile&image_size=square', phone: '13800138001', notes: '负责帐篷装备', arrived: false },
+  { id: '2', name: '李四', avatar: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20female%20portrait%20friendly%20smile&image_size=square', phone: '13800138002', notes: '负责衣物和睡袋', arrived: false },
+  { id: '3', name: '王五', avatar: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=avatar%20male%20portrait%20outdoor%20adventure&image_size=square', phone: '13800138003', notes: '负责炊具和药品', arrived: true },
 ];

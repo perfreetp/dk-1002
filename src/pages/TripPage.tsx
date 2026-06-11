@@ -8,6 +8,8 @@ export function TripPage() {
   const [editing, setEditing] = useState(false);
   const [tripData, setTripData] = useState<Trip | null>(currentTrip);
   const [showSummary, setShowSummary] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareType, setShareType] = useState<'unchecked' | 'unloaded' | 'all'>('unchecked');
 
   if (!tripData) {
     return (
@@ -250,32 +252,13 @@ export function TripPage() {
           <div className="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">出发前检查</h2>
-              {summary.unchecked.length > 0 && (
-                <button
-                  onClick={async () => {
-                    const uncheckedText = summary.unchecked.map(item => {
-                      const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
-                      return `- ${item.name}${assignee}`;
-                    }).join('\n');
-                    
-                    const shareText = `【待办提醒】\n${currentTrip?.name || '露营行程'}\n\n未完成事项:\n${uncheckedText}\n\n请尽快完成准备工作！`;
-                    
-                    if (navigator.share) {
-                      await navigator.share({
-                        title: '待办提醒',
-                        text: shareText,
-                      });
-                    } else {
-                      navigator.clipboard.writeText(shareText);
-                      alert('待办清单已复制到剪贴板');
-                    }
-                  }}
-                  className="flex items-center gap-2 px-3 py-2 bg-secondary text-white rounded-full text-sm font-medium hover:bg-orange-600 transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                  分享待办
-                </button>
-              )}
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="flex items-center gap-2 px-3 py-2 bg-secondary text-white rounded-full text-sm font-medium hover:bg-orange-600 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+                分享待办
+              </button>
             </div>
             
             <div className="mb-6">
@@ -325,6 +308,137 @@ export function TripPage() {
             >
               关闭
             </button>
+          </div>
+        </div>
+      )}
+
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-end z-50">
+          <div className="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">分享待办</h2>
+            
+            <div className="mb-6">
+              <span className="text-sm text-gray-600 mb-2 block">选择分享内容</span>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShareType('unchecked')}
+                  className={`w-full p-3 rounded-xl border-2 transition-colors ${
+                    shareType === 'unchecked'
+                      ? 'border-primary bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-800">未完成事项</span>
+                    <span className="text-sm text-gray-500">{summary.unchecked.length} 项</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setShareType('unloaded')}
+                  className={`w-full p-3 rounded-xl border-2 transition-colors ${
+                    shareType === 'unloaded'
+                      ? 'border-primary bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-800">未装车物品</span>
+                    <span className="text-sm text-gray-500">{summary.unloaded?.length || 0} 项</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setShareType('all')}
+                  className={`w-full p-3 rounded-xl border-2 transition-colors ${
+                    shareType === 'all'
+                      ? 'border-primary bg-orange-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-800">全部提醒</span>
+                    <span className="text-sm text-gray-500">{summary.total} 项</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  let items = [];
+                  let title = '';
+                  
+                  if (shareType === 'unchecked') {
+                    items = summary.unchecked;
+                    title = '未完成事项';
+                  } else if (shareType === 'unloaded') {
+                    items = summary.unchecked?.filter(item => !item.loaded) || [];
+                    title = '未装车物品';
+                  } else {
+                    items = summary.unchecked;
+                    title = '全部提醒';
+                  }
+                  
+                  const itemsText = items.map(item => {
+                    const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
+                    return `- ${item.name}${assignee}`;
+                  }).join('\n');
+                  
+                  const shareText = `【${title}】\n${currentTrip?.name || '露营行程'}\n\n集合点: ${currentTrip?.meetingPoint || '未设置'} ${currentTrip?.meetingTime || ''}\n\n${title}:\n${itemsText}\n\n请尽快完成准备工作！`;
+                  
+                  navigator.clipboard.writeText(shareText);
+                  alert('待办清单已复制到剪贴板');
+                  setShowShareModal(false);
+                }}
+                className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-green-600 transition-colors"
+              >
+                复制链接
+              </button>
+              <button
+                onClick={() => {
+                  let items = [];
+                  let title = '';
+                  
+                  if (shareType === 'unchecked') {
+                    items = summary.unchecked;
+                    title = '未完成事项';
+                  } else if (shareType === 'unloaded') {
+                    items = summary.unchecked?.filter(item => !item.loaded) || [];
+                    title = '未装车物品';
+                  } else {
+                    items = summary.unchecked;
+                    title = '全部提醒';
+                  }
+                  
+                  const itemsText = items.map(item => {
+                    const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
+                    return `- ${item.name}${assignee}`;
+                  }).join('\n');
+                  
+                  const shareText = `【${title}】\n${currentTrip?.name || '露营行程'}\n\n集合点: ${currentTrip?.meetingPoint || '未设置'} ${currentTrip?.meetingTime || ''}\n\n${title}:\n${itemsText}\n\n请尽快完成准备工作！`;
+                  
+                  if (navigator.share) {
+                    navigator.share({
+                      title: title,
+                      text: shareText,
+                    }).then(() => setShowShareModal(false));
+                  } else {
+                    navigator.clipboard.writeText(shareText);
+                    alert('待办清单已复制到剪贴板');
+                    setShowShareModal(false);
+                  }
+                }}
+                className="flex-1 py-3 rounded-xl bg-secondary text-white font-semibold hover:bg-orange-600 transition-colors"
+              >
+                系统分享
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,10 +1,11 @@
-import { Users, CheckCircle2, Circle, Package, MapPin, Clock } from 'lucide-react';
+import { Users, CheckCircle2, Circle, Package, MapPin, Clock, Phone, MessageCircle, ChevronRight } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { useNavigate } from 'react-router-dom';
 
 export function TeamPage() {
-  const { teamMembers, checklist, currentTrip } = useAppStore();
+  const { teamMembers, checklist, currentTrip, updateTeamMember, getTeamSummary } = useAppStore();
   const navigate = useNavigate();
+  const teamSummary = getTeamSummary();
 
   if (!currentTrip) {
     return (
@@ -35,8 +36,10 @@ export function TeamPage() {
     return { total: items.length, completed, loaded };
   };
 
+  const unassignedItems = checklist.filter(item => !item.assignedTo);
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-gradient-to-r from-primary to-green-500 text-white p-6">
         <div className="flex items-center gap-3">
           <Users className="w-8 h-8" />
@@ -51,6 +54,12 @@ export function TeamPage() {
         <div className="bg-white rounded-2xl shadow-md p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-800">行程信息</h2>
+            <button
+              onClick={() => navigate('/trip')}
+              className="flex items-center gap-1 text-primary text-sm font-medium"
+            >
+              编辑 <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
           
           <div className="space-y-3">
@@ -72,6 +81,21 @@ export function TeamPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-md p-4 mb-4">
+          <h2 className="font-bold text-gray-800 mb-4">集合状态</h2>
+          
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-gray-600">到达人数</span>
+            <span className="font-semibold text-primary">{teamSummary.arrived}/{teamSummary.total}</span>
+          </div>
+          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+              style={{ width: teamSummary.total > 0 ? `${(teamSummary.arrived / teamSummary.total) * 100}%` : '0%' }}
+            />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-md p-4 mb-4">
           <h2 className="font-bold text-gray-800 mb-4">队友列表</h2>
           
           <div className="space-y-4">
@@ -88,15 +112,40 @@ export function TeamPage() {
                       className="w-12 h-12 rounded-full object-cover"
                     />
                     <div className="flex-1">
-                      <div className="font-semibold text-gray-800">{member.name}</div>
-                      <div className="text-sm text-gray-500">
-                        {stats.completed}/{stats.total} 已完成 | {stats.loaded}/{stats.total} 已装车
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-800">{member.name}</span>
+                        <button
+                          onClick={() => updateTeamMember(member.id, { arrived: !member.arrived })}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            member.arrived 
+                              ? 'bg-green-100 text-green-600' 
+                              : 'bg-red-100 text-red-600'
+                          }`}
+                        >
+                          {member.arrived ? '已到达' : '未到达'}
+                        </button>
                       </div>
+                      {member.notes && (
+                        <div className="text-sm text-gray-500 mt-1">{member.notes}</div>
+                      )}
                     </div>
                     {stats.total > 0 && stats.completed === stats.total && (
                       <CheckCircle2 className="w-6 h-6 text-green-500" />
                     )}
                   </div>
+
+                  {member.phone && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                      <Phone className="w-4 h-4" />
+                      <span>{member.phone}</span>
+                      <button 
+                        onClick={() => window.open(`tel:${member.phone}`, '_blank')}
+                        className="ml-auto p-2 bg-blue-100 text-blue-600 rounded-full"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
 
                   {items.length > 0 && (
                     <div className="space-y-2">
@@ -133,6 +182,45 @@ export function TeamPage() {
           </div>
         </div>
 
+        {unassignedItems.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-md p-4 mb-4">
+            <h2 className="font-bold text-gray-800 mb-4">未分配物品</h2>
+            
+            <div className="space-y-2">
+              {unassignedItems.map((item) => (
+                <div 
+                  key={item.id}
+                  className="flex items-center gap-3 p-3 bg-yellow-50 rounded-xl"
+                >
+                  {item.checked ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <span className={`text-sm ${item.checked ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                      {item.name}
+                    </span>
+                    <span className="text-xs text-gray-400 ml-2 capitalize">
+                      {item.category === 'tent' ? '帐篷' : item.category === 'cooking' ? '炊具' : item.category === 'medicine' ? '药品' : item.category === 'clothing' ? '衣物' : '其他'}
+                    </span>
+                  </div>
+                  {item.loaded && (
+                    <Package className="w-4 h-4 text-blue-500" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate('/checklist')}
+              className="w-full mt-4 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
+            >
+              去分配物品
+            </button>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl shadow-md p-4">
           <h2 className="font-bold text-gray-800 mb-4">整体进度</h2>
           
@@ -166,13 +254,6 @@ export function TeamPage() {
                 />
               </div>
             </div>
-
-            {checklist.filter(item => !item.assignedTo).length > 0 && (
-              <div className="p-3 bg-yellow-50 rounded-xl flex items-center gap-2">
-                <Package className="w-5 h-5 text-yellow-600" />
-                <span className="text-yellow-700 text-sm">还有 {checklist.filter(item => !item.assignedTo).length} 件物品未分配</span>
-              </div>
-            )}
           </div>
         </div>
       </main>

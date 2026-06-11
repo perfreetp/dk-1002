@@ -31,10 +31,13 @@ interface AppState {
   updateChecklistItem: (id: string, updates: Partial<ChecklistItem>) => void;
   deleteChecklistItem: (id: string) => void;
   
+  updateTeamMember: (id: string, updates: Partial<TeamMember>) => void;
+  
   loadData: () => void;
   checkOffline: () => void;
   shareTrip: () => string;
-  getTripSummary: () => { completed: number; total: number; unchecked: ChecklistItem[] };
+  getTripSummary: () => { completed: number; total: number; unchecked: ChecklistItem[]; unloaded: ChecklistItem[] };
+  getTeamSummary: () => { arrived: number; total: number; unassignedItems: ChecklistItem[] };
 }
 
 const STORAGE_KEY = 'camp-app-storage';
@@ -114,6 +117,14 @@ export const useAppStore = create<AppState>()(
         set((state) => ({ checklist: state.checklist.filter(item => item.id !== id) }));
       },
       
+      updateTeamMember: (id, updates) => {
+        set((state) => ({
+          teamMembers: state.teamMembers.map(member =>
+            member.id === id ? { ...member, ...updates } : member
+          ),
+        }));
+      },
+      
       loadData: () => {
         set({ loading: true });
         setTimeout(() => {
@@ -135,7 +146,15 @@ export const useAppStore = create<AppState>()(
         const { checklist } = get();
         const completed = checklist.filter(item => item.checked).length;
         const unchecked = checklist.filter(item => !item.checked);
-        return { completed, total: checklist.length, unchecked };
+        const unloaded = checklist.filter(item => !item.loaded);
+        return { completed, total: checklist.length, unchecked, unloaded };
+      },
+      
+      getTeamSummary: () => {
+        const { teamMembers, checklist } = get();
+        const arrived = teamMembers.filter(member => member.arrived).length;
+        const unassignedItems = checklist.filter(item => !item.assignedTo);
+        return { arrived, total: teamMembers.length, unassignedItems };
       },
     }),
     {
@@ -146,6 +165,7 @@ export const useAppStore = create<AppState>()(
         trips: state.trips,
         currentTrip: state.currentTrip,
         checklist: state.checklist,
+        teamMembers: state.teamMembers,
       }),
     }
   )

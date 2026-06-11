@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, MapPin, Clock, Wallet, Route, AlertTriangle, Share2, CheckCircle2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, Wallet, Route, AlertTriangle, Share2, CheckCircle2, Send } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import type { Trip } from '../types';
 
@@ -247,8 +247,36 @@ export function TripPage() {
 
       {showSummary && (
         <div className="fixed inset-0 bg-black/50 flex items-end z-50">
-          <div className="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">出发前检查</h2>
+          <div className="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800">出发前检查</h2>
+              {summary.unchecked.length > 0 && (
+                <button
+                  onClick={async () => {
+                    const uncheckedText = summary.unchecked.map(item => {
+                      const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
+                      return `- ${item.name}${assignee}`;
+                    }).join('\n');
+                    
+                    const shareText = `【待办提醒】\n${currentTrip?.name || '露营行程'}\n\n未完成事项:\n${uncheckedText}\n\n请尽快完成准备工作！`;
+                    
+                    if (navigator.share) {
+                      await navigator.share({
+                        title: '待办提醒',
+                        text: shareText,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(shareText);
+                      alert('待办清单已复制到剪贴板');
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 bg-secondary text-white rounded-full text-sm font-medium hover:bg-orange-600 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                  分享待办
+                </button>
+              )}
+            </div>
             
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">

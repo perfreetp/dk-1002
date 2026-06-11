@@ -1,4 +1,4 @@
-import { Tent, MapPin, CheckSquare, Cloud } from 'lucide-react';
+import { Tent, MapPin, CheckSquare, Cloud, Users } from 'lucide-react';
 
 interface TabBarProps {
   currentPage: string;
@@ -9,6 +9,7 @@ const tabs = [
   { id: '/', label: '发现', icon: MapPin },
   { id: '/trip', label: '行程', icon: Tent },
   { id: '/checklist', label: '清单', icon: CheckSquare },
+  { id: '/team', label: '协作', icon: Users },
   { id: '/weather', label: '天气', icon: Cloud },
 ];
 

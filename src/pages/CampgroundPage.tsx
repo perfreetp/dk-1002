@@ -26,7 +26,7 @@ export function CampgroundPage() {
   });
 
   if (selectedCampground) {
-    return <CampgroundDetail campground={selectedCampground} />;
+    return <CampgroundDetail campground={selectedCampground} onBack={() => setSelectedCampground(null)} />;
   }
 
   return (

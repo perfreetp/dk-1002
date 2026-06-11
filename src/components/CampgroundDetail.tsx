@@ -1,14 +1,13 @@
-import { MapPin, Star, DollarSign, Clock, PawPrint, Phone, ChevronLeft, CalendarCheck } from 'lucide-react';
+import { MapPin, Star, DollarSign, Clock, PawPrint, Phone, ChevronLeft, CalendarCheck, Navigation } from 'lucide-react';
 import type { Campground } from '../types';
-import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 
 interface CampgroundDetailProps {
   campground: Campground;
+  onBack: () => void;
 }
 
-export function CampgroundDetail({ campground }: CampgroundDetailProps) {
-  const navigate = useNavigate();
+export function CampgroundDetail({ campground, onBack }: CampgroundDetailProps) {
   const { addTrip } = useAppStore();
 
   const handleCreateTrip = () => {
@@ -24,8 +23,15 @@ export function CampgroundDetail({ campground }: CampgroundDetailProps) {
       meetingTime: '09:00',
       backupPlan: '',
     });
-    navigate('/trip');
+    window.location.href = '#/trip';
   };
+
+  const openNavigation = () => {
+    const url = `geo:${campground.latitude},${campground.longitude}?q=${encodeURIComponent(campground.name + ' ' + campground.address)}`;
+    window.open(url, '_blank');
+  };
+
+  const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${campground.latitude},${campground.longitude}&zoom=15&size=600x300&markers=color:green%7Clabel:C%7C${campground.latitude},${campground.longitude}&key=AIzaSyD7POAQA-i16Vws48h4yJN8mdtbFFzJMXM`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -37,7 +43,7 @@ export function CampgroundDetail({ campground }: CampgroundDetailProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <button 
-          onClick={() => navigate(-1)}
+          onClick={onBack}
           className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg"
         >
           <ChevronLeft className="w-6 h-6 text-gray-800" />
@@ -54,9 +60,31 @@ export function CampgroundDetail({ campground }: CampgroundDetailProps) {
       </div>
 
       <div className="bg-white rounded-t-3xl -mt-6 relative z-10 p-6">
-        <div className="flex items-center gap-2 text-gray-500 mb-4">
+        <button
+          onClick={openNavigation}
+          className="flex items-center gap-2 text-gray-500 mb-4 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+        >
           <MapPin className="w-5 h-5" />
-          <span>{campground.address}</span>
+          <span className="flex-1 text-left">{campground.address}</span>
+          <Navigation className="w-4 h-4 text-primary" />
+        </button>
+
+        <div className="mb-4">
+          <h3 className="font-semibold text-gray-800 mb-2">地图预览</h3>
+          <div className="relative rounded-xl overflow-hidden border-2 border-gray-200">
+            <img 
+              src={mapUrl} 
+              alt="地图预览"
+              className="w-full h-40 object-cover"
+            />
+            <button
+              onClick={openNavigation}
+              className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium text-primary"
+            >
+              <Navigation className="w-4 h-4" />
+              导航
+            </button>
+          </div>
         </div>
 
         <p className="text-gray-600 mb-6 leading-relaxed">{campground.description}</p>

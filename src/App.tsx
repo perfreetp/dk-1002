@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CampgroundPage } from './pages/CampgroundPage';
 import { TripPage } from './pages/TripPage';
 import { ChecklistPage } from './pages/ChecklistPage';
+import { TeamPage } from './pages/TeamPage';
 import { WeatherPage } from './pages/WeatherPage';
 import { TabBar } from './components/TabBar';
 import { useAppStore } from './store/appStore';
@@ -44,6 +45,8 @@ export default function App() {
         return <TripPage />;
       case '/checklist':
         return <ChecklistPage />;
+      case '/team':
+        return <TeamPage />;
       case '/weather':
         return <WeatherPage />;
       default:

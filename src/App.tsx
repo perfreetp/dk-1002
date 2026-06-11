@@ -1,0 +1,60 @@
+import { useState, useEffect } from 'react';
+import { CampgroundPage } from './pages/CampgroundPage';
+import { TripPage } from './pages/TripPage';
+import { ChecklistPage } from './pages/ChecklistPage';
+import { WeatherPage } from './pages/WeatherPage';
+import { TabBar } from './components/TabBar';
+import { useAppStore } from './store/appStore';
+
+export default function App() {
+  const [currentPage, setCurrentPage] = useState('/');
+  const { checkOffline, loadData } = useAppStore();
+
+  useEffect(() => {
+    loadData();
+    checkOffline();
+    
+    window.addEventListener('online', checkOffline);
+    window.addEventListener('offline', checkOffline);
+    
+    return () => {
+      window.removeEventListener('online', checkOffline);
+      window.removeEventListener('offline', checkOffline);
+    };
+  }, [loadData, checkOffline]);
+
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page);
+    window.history.pushState({}, '', page);
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPage(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case '/':
+        return <CampgroundPage />;
+      case '/trip':
+        return <TripPage />;
+      case '/checklist':
+        return <ChecklistPage />;
+      case '/weather':
+        return <WeatherPage />;
+      default:
+        return <CampgroundPage />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {renderPage()}
+      <TabBar currentPage={currentPage} onNavigate={handleNavigate} />
+    </div>
+  );
+}

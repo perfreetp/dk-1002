@@ -1,10 +1,8 @@
 import { Users, CheckCircle2, Circle, Package, MapPin, Clock, Phone, MessageCircle, ChevronRight } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
-import { useNavigate } from 'react-router-dom';
 
 export function TeamPage() {
   const { teamMembers, checklist, currentTrip, updateTeamMember, getTeamSummary } = useAppStore();
-  const navigate = useNavigate();
   const teamSummary = getTeamSummary();
 
   if (!currentTrip) {
@@ -15,7 +13,7 @@ export function TeamPage() {
           <h2 className="text-xl font-bold text-gray-800 mb-2">暂无行程</h2>
           <p className="text-gray-500 mb-4">请先创建一个行程</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => window.location.href = '/'}
             className="px-6 py-3 bg-primary text-white rounded-xl font-semibold"
           >
             去发现营地
@@ -55,7 +53,7 @@ export function TeamPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-800">行程信息</h2>
             <button
-              onClick={() => navigate('/trip')}
+              onClick={() => window.location.href = '/trip'}
               className="flex items-center gap-1 text-primary text-sm font-medium"
             >
               编辑 <ChevronRight className="w-4 h-4" />
@@ -213,7 +211,7 @@ export function TeamPage() {
             </div>
 
             <button
-              onClick={() => navigate('/checklist')}
+              onClick={() => window.location.href = '/checklist'}
               className="w-full mt-4 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
             >
               去分配物品

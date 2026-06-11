@@ -4,7 +4,7 @@ import { useAppStore } from '../store/appStore';
 import type { Trip } from '../types';
 
 export function TripPage() {
-  const { currentTrip, updateTrip, shareTrip, getTripSummary, isOffline } = useAppStore();
+  const { currentTrip, updateTrip, shareTrip, getTripSummary, isOffline, checklist } = useAppStore();
   const [editing, setEditing] = useState(false);
   const [tripData, setTripData] = useState<Trip | null>(currentTrip);
   const [showSummary, setShowSummary] = useState(false);
@@ -51,6 +51,49 @@ export function TripPage() {
 
   const summary = getTripSummary();
   const progress = summary.total > 0 ? (summary.completed / summary.total) * 100 : 0;
+
+  const generateShareText = () => {
+    const tripName = currentTrip?.name || '露营行程';
+    const meetingPoint = currentTrip?.meetingPoint || '未设置';
+    const meetingTime = currentTrip?.meetingTime || '';
+    
+    let content = '';
+    
+    if (shareType === 'unchecked') {
+      const uncheckedText = summary.unchecked.map(item => {
+        const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
+        return `- ${item.name}${assignee}`;
+      }).join('\n');
+      
+      content = `【未完成事项】\n${tripName}\n\n集合地点: ${meetingPoint}\n集合时间: ${meetingTime || '未设置'}\n\n待完成物品:\n${uncheckedText}\n\n请尽快完成准备工作！`;
+      
+    } else if (shareType === 'unloaded') {
+      const unloadedItems = summary.unloaded || checklist.filter(item => !item.loaded);
+      const unloadedText = unloadedItems.map(item => {
+        const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
+        const status = item.checked ? '✓' : '✗';
+        return `${status} ${item.name}${assignee}`;
+      }).join('\n');
+      
+      content = `【未装车物品】\n${tripName}\n\n集合地点: ${meetingPoint}\n集合时间: ${meetingTime || '未设置'}\n\n未装车物品:\n${unloadedText}\n\n请尽快将物品装车！`;
+      
+    } else {
+      const uncheckedText = summary.unchecked.map(item => {
+        const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
+        return `- ${item.name}${assignee}`;
+      }).join('\n');
+      
+      const unloadedItems = summary.unloaded || checklist.filter(item => !item.loaded);
+      const unloadedText = unloadedItems.map(item => {
+        const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
+        return `- ${item.name}${assignee}`;
+      }).join('\n');
+      
+      content = `【行程准备提醒】\n${tripName}\n\n集合地点: ${meetingPoint}\n集合时间: ${meetingTime || '未设置'}\n\n待完成准备:\n${uncheckedText || '无'}\n\n待装车物品:\n${unloadedText || '无'}\n\n请尽快完成准备工作！`;
+    }
+    
+    return content;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -371,27 +414,7 @@ export function TripPage() {
               </button>
               <button
                 onClick={() => {
-                  let items = [];
-                  let title = '';
-                  
-                  if (shareType === 'unchecked') {
-                    items = summary.unchecked;
-                    title = '未完成事项';
-                  } else if (shareType === 'unloaded') {
-                    items = summary.unchecked?.filter(item => !item.loaded) || [];
-                    title = '未装车物品';
-                  } else {
-                    items = summary.unchecked;
-                    title = '全部提醒';
-                  }
-                  
-                  const itemsText = items.map(item => {
-                    const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
-                    return `- ${item.name}${assignee}`;
-                  }).join('\n');
-                  
-                  const shareText = `【${title}】\n${currentTrip?.name || '露营行程'}\n\n集合点: ${currentTrip?.meetingPoint || '未设置'} ${currentTrip?.meetingTime || ''}\n\n${title}:\n${itemsText}\n\n请尽快完成准备工作！`;
-                  
+                  const shareText = generateShareText();
                   navigator.clipboard.writeText(shareText);
                   alert('待办清单已复制到剪贴板');
                   setShowShareModal(false);
@@ -402,30 +425,10 @@ export function TripPage() {
               </button>
               <button
                 onClick={() => {
-                  let items = [];
-                  let title = '';
-                  
-                  if (shareType === 'unchecked') {
-                    items = summary.unchecked;
-                    title = '未完成事项';
-                  } else if (shareType === 'unloaded') {
-                    items = summary.unchecked?.filter(item => !item.loaded) || [];
-                    title = '未装车物品';
-                  } else {
-                    items = summary.unchecked;
-                    title = '全部提醒';
-                  }
-                  
-                  const itemsText = items.map(item => {
-                    const assignee = item.assignedTo ? ` (${item.assignedTo})` : '';
-                    return `- ${item.name}${assignee}`;
-                  }).join('\n');
-                  
-                  const shareText = `【${title}】\n${currentTrip?.name || '露营行程'}\n\n集合点: ${currentTrip?.meetingPoint || '未设置'} ${currentTrip?.meetingTime || ''}\n\n${title}:\n${itemsText}\n\n请尽快完成准备工作！`;
-                  
+                  const shareText = generateShareText();
                   if (navigator.share) {
                     navigator.share({
-                      title: title,
+                      title: '露营行程提醒',
                       text: shareText,
                     }).then(() => setShowShareModal(false));
                   } else {

@@ -8,7 +8,7 @@ interface CampgroundDetailProps {
 }
 
 export function CampgroundDetail({ campground, onBack }: CampgroundDetailProps) {
-  const { addTrip } = useAppStore();
+  const { addTrip, navigateTo } = useAppStore();
 
   const handleCreateTrip = () => {
     addTrip({
@@ -23,7 +23,7 @@ export function CampgroundDetail({ campground, onBack }: CampgroundDetailProps) 
       meetingTime: '09:00',
       backupPlan: '',
     });
-    window.location.href = '#/trip';
+    navigateTo('/trip');
   };
 
   const openNavigation = () => {

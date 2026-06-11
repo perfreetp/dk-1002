@@ -2,7 +2,7 @@ import { Users, CheckCircle2, Circle, Package, MapPin, Clock, Phone, MessageCirc
 import { useAppStore } from '../store/appStore';
 
 export function TeamPage() {
-  const { teamMembers, checklist, currentTrip, updateTeamMember, getTeamSummary } = useAppStore();
+  const { teamMembers, checklist, currentTrip, updateTeamMember, getTeamSummary, navigateTo } = useAppStore();
   const teamSummary = getTeamSummary();
 
   if (!currentTrip) {
@@ -13,7 +13,7 @@ export function TeamPage() {
           <h2 className="text-xl font-bold text-gray-800 mb-2">暂无行程</h2>
           <p className="text-gray-500 mb-4">请先创建一个行程</p>
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigateTo('/')}
             className="px-6 py-3 bg-primary text-white rounded-xl font-semibold"
           >
             去发现营地
@@ -53,7 +53,7 @@ export function TeamPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-800">行程信息</h2>
             <button
-              onClick={() => window.location.href = '/trip'}
+              onClick={() => navigateTo('/trip')}
               className="flex items-center gap-1 text-primary text-sm font-medium"
             >
               编辑 <ChevronRight className="w-4 h-4" />
@@ -211,7 +211,7 @@ export function TeamPage() {
             </div>
 
             <button
-              onClick={() => window.location.href = '/checklist'}
+              onClick={() => navigateTo('/checklist')}
               className="w-full mt-4 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
             >
               去分配物品

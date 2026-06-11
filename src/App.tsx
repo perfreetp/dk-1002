@@ -8,7 +8,11 @@ import { TabBar } from './components/TabBar';
 import { useAppStore } from './store/appStore';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('/');
+  const [currentPage, setCurrentPage] = useState(() => {
+    const validPaths = ['/', '/trip', '/checklist', '/team', '/weather'];
+    const path = window.location.pathname;
+    return validPaths.includes(path) ? path : '/';
+  });
   const { checkOffline, loadData } = useAppStore();
 
   useEffect(() => {
@@ -24,14 +28,28 @@ export default function App() {
     };
   }, [loadData, checkOffline]);
 
+  useEffect(() => {
+    const validPaths = ['/', '/trip', '/checklist', '/team', '/weather'];
+    const path = window.location.pathname;
+    if (validPaths.includes(path) && path !== currentPage) {
+      setCurrentPage(path);
+    }
+  }, []);
+
   const handleNavigate = (page: string) => {
-    setCurrentPage(page);
-    window.history.pushState({}, '', page);
+    if (page !== currentPage) {
+      setCurrentPage(page);
+      window.history.pushState({}, '', page);
+    }
   };
 
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPage(window.location.pathname);
+      const validPaths = ['/', '/trip', '/checklist', '/team', '/weather'];
+      const path = window.location.pathname;
+      if (validPaths.includes(path)) {
+        setCurrentPage(path);
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);

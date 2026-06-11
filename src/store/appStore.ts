@@ -38,6 +38,7 @@ interface AppState {
   shareTrip: () => string;
   getTripSummary: () => { completed: number; total: number; unchecked: ChecklistItem[]; unloaded: ChecklistItem[] };
   getTeamSummary: () => { arrived: number; total: number; unassignedItems: ChecklistItem[] };
+  navigateTo: (page: string) => void;
 }
 
 const STORAGE_KEY = 'camp-app-storage';
@@ -155,6 +156,11 @@ export const useAppStore = create<AppState>()(
         const arrived = teamMembers.filter(member => member.arrived).length;
         const unassignedItems = checklist.filter(item => !item.assignedTo);
         return { arrived, total: teamMembers.length, unassignedItems };
+      },
+      
+      navigateTo: (page) => {
+        window.history.pushState({}, '', page);
+        window.dispatchEvent(new PopStateEvent('popstate'));
       },
     }),
     {
